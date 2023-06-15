@@ -1,7 +1,11 @@
 from faker.providers import BaseProvider
-import random
-import time
 from yahoo_fin import stock_info as si
+import random
+import json
+import time
+from datetime import datetime
+import uuid
+
 
 StockNames = ["BTC-USD", "ETH-USD", "BNB-USD", "ADA-USD", "DOGE-USD"]
 
@@ -15,12 +19,19 @@ class RealStockProvider(BaseProvider):
         return nextval
 
     def produce_msg(self):
+        random_id = str(uuid.uuid4())
         stockname = self.stock_name()
-        ts = time.time()
+        timestamp_ms = int(time.time() * 1000) #current timestamp in ms
+        datetime_obj = datetime.fromtimestamp(timestamp_ms / 1000) #convert timestamp to datetime
+        iso_8601_timestamp = datetime_obj.isoformat() #format datetime in iso format
+        
         message = {
             "stock_name": stockname,
             "stock_value": self.stock_value(stockname),
-            "timestamp": int(ts * 1000),
+            "event_time": timestamp_ms,
+            "iso_date": iso_8601_timestamp,
         }
-        key = {"stock_name": stockname}
+        key = {"id": random_id}
+        
         return message, key
+
